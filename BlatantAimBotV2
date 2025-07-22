@@ -1,3 +1,11 @@
+--[[
+
+	AirHub V2 by Exunys © CC0 1.0 Universal (2023)
+	https://github.com/Exunys
+
+]]
+
+--// Loaded Check
 
 if AirHubV2Loaded or AirHubV2Loading or AirHub then
 	return
@@ -235,15 +243,6 @@ AimbotDeveloperSection:Button({
 local AimbotPropertiesSection = _Aimbot:Section({
 	Name = "Properties",
 	Side = "Left"
-})
-
-AimbotPropertiesSection:Keybind({
-	Name = "Lock-On Key",
-	Flag = "Aimbot_LockOnKey",
-	Default = Enum.KeyCode.Q,
-	Callback = function(Key)
-		Aimbot_Settings.LockOnKey = Key
-	end
 })
 
 AimbotPropertiesSection:Toggle({
@@ -980,61 +979,7 @@ delay(2, function()
 end)
 ]=]
 
-
 --//
-local UserInputService = game:GetService("UserInputService")
-local Players = game:GetService("Players")
-local LocalPlayer = Players.LocalPlayer
-local Camera = workspace.CurrentCamera
-
-local LockedTarget = nil
-
-local function IsTargetValid(player)
-	if player == LocalPlayer then return false end
-	local character = player.Character
-	if not character then return false end
-	local humanoid = character:FindFirstChildOfClass("Humanoid")
-	local part = character:FindFirstChild(Aimbot_Settings.LockPart or "Head")
-	return humanoid and humanoid.Health > 0 and part
-end
-
-local function GetClosestTarget()
-	local closest = nil
-	local shortestDist = math.huge
-	for _, player in ipairs(Players:GetPlayers()) do
-		if not IsTargetValid(player) then continue end
-		local part = player.Character:FindFirstChild(Aimbot_Settings.LockPart or "Head")
-		local screenPos, onScreen = Camera:WorldToViewportPoint(part.Position)
-		if not onScreen then continue end
-		local mousePos = UserInputService:GetMouseLocation()
-		local dist = (Vector2.new(screenPos.X, screenPos.Y) - mousePos).Magnitude
-		if dist < Aimbot_FOV.Radius and dist < shortestDist then
-			shortestDist = dist
-			closest = player
-		end
-	end
-	return closest
-end
-
-UserInputService.InputBegan:Connect(function(input, gameProcessed)
-	if gameProcessed then return end
-	if input.KeyCode == GUI.flags["Aimbot_LockOnKey"] then
-		if LockedTarget then
-			Aimbot_Settings.Target = nil
-			LockedTarget = nil
-			warn("[Aimbot] Unlocked target.")
-		else
-			local target = GetClosestTarget()
-			if target then
-				Aimbot_Settings.Target = target
-				LockedTarget = target
-				warn("[Aimbot] Locked onto:", target.Name)
-			else
-				warn("[Aimbot] No valid target found.")
-			end
-		end
-	end
-end)
 
 ESP.Load()
 Aimbot.Load()
