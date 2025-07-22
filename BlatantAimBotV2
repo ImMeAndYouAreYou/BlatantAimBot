@@ -889,6 +889,28 @@ SettingsSection:Button({
 	end
 })
 
+local LockOnKey = Enum.KeyCode.Q -- Default key
+
+local LockOnKeybind = _Aimbot:Keybind({
+    Name = "Lock On Key",
+    Flag = "Aimbot_LockOnKey",
+    Default = LockOnKey,
+    Callback = function(Keybind)
+        LockOnKey = Keybind
+    end
+})
+
+local UserInputService = game:GetService("UserInputService")
+
+UserInputService.InputBegan:Connect(function(input, gameProcessed)
+    if gameProcessed then return end
+    if input.KeyCode == LockOnKey then
+        -- Lock on to the player by the selected part
+        local selectedPart = Aimbot_Settings.LockPart
+        Aimbot:LockOn(selectedPart)
+    end
+end)
+
 local ConfigList = ProfilesSection:Dropdown({
 	Name = "Configurations",
 	Flag = "Config Dropdown",
@@ -972,72 +994,6 @@ end)
 ]=]
 
 --//
-
-local UserInputService = game:GetService("UserInputService")
-local Players = game:GetService("Players")
-local LocalPlayer = Players.LocalPlayer
-local Camera = workspace.CurrentCamera
-
-local LockKey = Enum.KeyCode.Q
-local LockedTarget = nil
-
-local function IsTargetValid(player)
-	if player == LocalPlayer then return false end
-	local character = player.Character
-	if not character then return false end
-
-	local humanoid = character:FindFirstChildOfClass("Humanoid")
-	local lockPart = character:FindFirstChild(Aimbot_Settings.LockPart or "Head")
-	if humanoid and humanoid.Health > 0 and lockPart then
-		return true
-	end
-	return false
-end
-
-local function GetClosestTarget()
-	local closestPlayer = nil
-	local shortestDistance = math.huge
-
-	for _, player in ipairs(Players:GetPlayers()) do
-		if not IsTargetValid(player) then continue end
-
-		local lockPart = player.Character:FindFirstChild(Aimbot_Settings.LockPart or "Head")
-		local screenPos, onScreen = Camera:WorldToViewportPoint(lockPart.Position)
-		if not onScreen then continue end
-
-		local mousePos = UserInputService:GetMouseLocation()
-		local dist = (Vector2.new(screenPos.X, screenPos.Y) - mousePos).Magnitude
-
-		if dist < Aimbot_FOV.Radius and dist < shortestDistance then
-			shortestDistance = dist
-			closestPlayer = player
-		end
-	end
-
-	return closestPlayer
-end
-
-UserInputService.InputBegan:Connect(function(input, gameProcessed)
-	if gameProcessed then return end
-
-	if input.KeyCode == LockKey then
-		if LockedTarget then
-			Aimbot_Settings.Target = nil
-			LockedTarget = nil
-			warn("[Aimbot] Unlocked target.")
-		else
-			local target = GetClosestTarget()
-			if target then
-				Aimbot_Settings.Target = target
-				LockedTarget = target
-				warn("[Aimbot] Locked onto:", target.Name)
-			else
-				warn("[Aimbot] No valid target found.")
-			end
-		end
-	end
-end)
-
 
 ESP.Load()
 Aimbot.Load()
